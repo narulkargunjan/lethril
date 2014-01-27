@@ -1,0 +1,14 @@
+Source: python-lethril
+Section: python
+Priority: extra
+Maintainer: Deepu T Philip <deepu.dtp@gmail.com>
+Build-Depends: debhelper (>= 9), python, dh-virtualenv
+Standards-Version: 3.9.5
+# Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://git.debian.org/collab-maint/python-lethril.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/python-lethril.git;a=summary
+
+Package: python-lethril
+Architecture: any
+Depends: ${python:Depends}, ${misc:Depends}
+Description: Lethril - A twitter stream eavesdropper

@@ -1,0 +1,7 @@
+bin/lethril-twitter /usr/bin
+bin/lethril-twitterd /etc/init.d
+
+conf/config.ini /etc/usr/local/lethril
+conf/lethril-twitterd /etc/default
+
+data/track.txt /etc/usr/local/lethril

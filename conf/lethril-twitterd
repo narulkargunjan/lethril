@@ -1,0 +1,4 @@
+CONFIG_FILE=/etc/usr/local/lethril/config.ini
+PYTHON=/usr/share/python/python-lethril/bin/python
+SCRIPT=/usr/bin/lethril-twitter
+PID_FILE=/var/run/lethril-twitter.pid
