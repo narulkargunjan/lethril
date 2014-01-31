@@ -64,7 +64,8 @@ if __name__ == '__main__':
                                twitter['consumer_secret'],
                                twitter['access_token'],
                                twitter['access_token_secret'],
-                               track=track, handler=rfh)
+                               track=track, handler=rfh,
+                               languages=['en'])
 
     # Setup signal handlers for correct exit on interrupt or terminate
     def terminate(*args):
@@ -77,12 +78,14 @@ if __name__ == '__main__':
 
     signal.signal(signal.SIGTERM, terminate)
 
-    # Listen
-    log.info("Eavesdropping on twitter")    
+    # Listen and recover on error
+    log.warn("Eavesdropping on twitter")    
     try:
         listener.listen()
     except KeyboardInterrupt:
+        log.warning("Terminating Listener")
         terminate()
     except Exception:
         log.exception("Listener Error")
+        log.warning("Terminating Listener")
         terminate()

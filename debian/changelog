@@ -1,3 +1,10 @@
+python-lethril (0.1.1) unstable; urgency=low
+
+  * Added meaningful logging.
+  * Recover on stream error by returning True from the on_error handler
+
+ -- Deepu T Philip <deepu@deepu-laptop>  Fri, 31 Jan 2014 14:37:37 +0530
+
 python-lethril (0.1) unstable; urgency=low
 
   * Initial release

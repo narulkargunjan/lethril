@@ -65,6 +65,7 @@ class TwitterListener(StreamListener):
 
     def on_error(self, status):
         log.error("Status Code : %s" % status)
+        return True
 
     def on_disconnect(self, notice):
         """Called when twitter sends a disconnect notice
@@ -73,7 +74,7 @@ class TwitterListener(StreamListener):
         https://dev.twitter.com/docs/streaming-apis/messages#Disconnect_messages_disconnect
         """
         log.warning(notice)
-        return
+        return True
 
 
     def listen(self):
@@ -83,15 +84,15 @@ class TwitterListener(StreamListener):
     def stop(self):
 
         # Disconnect stream
-        log.info("Disconnect Stream")
+        log.warn("Disconnecting Stream...")
         self.stream.disconnect()
 
         # Block until all queued items are processed
-        log.info("Join Queue")
+        log.warn("Joining Queue...")
         self.queue.join()
 
         # Flush items currently in memory to disk
-        log.info("Flushing in-memory items to disk")
+        log.warn("Flushing in-memory items to disk...")
         self.handler._flush()
 
-        log.info("Listener Stopped")
+        log.warn("Listener Stopped.")
