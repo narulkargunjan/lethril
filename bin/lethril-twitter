@@ -57,7 +57,8 @@ if __name__ == '__main__':
 
     # Configure how the tweets are written to file
     rfh = lethril.handlers.TrackHandler(twitter['output_dir'], track,
-            entries_per_file=twitter['entries_per_file'])
+            entries_per_file=twitter['entries_per_file'],
+            compress=True)
 
     # Initialize listener 
     listener = TwitterListener(twitter['consumer_key'],

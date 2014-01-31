@@ -4,6 +4,7 @@ import unittest
 import shutil
 import os
 import json
+import gzip
 
 class TestRotatingFileHandler(unittest.TestCase):
 
@@ -86,6 +87,53 @@ class TestRotatingFileHandler(unittest.TestCase):
                 item = item.strip()
                 n = i + (count * self.nper)
                 self.assertEqual("Item-%03d" % n, item)
+
+
+    def test_compressed_flush(self): 
+
+        self.h.compress = True
+
+        nfiles = 10
+        remaining = 10
+
+        for i in xrange((nfiles * self.nper) + remaining):
+            self.h("Item-%03d" % i)
+
+        files = sorted(os.listdir(self.output_dir))
+        self.assertEqual(nfiles, len(files),
+                         msg="Incorrect number of files written")
+
+        count = 0
+        for _file in files:
+            path = os.path.join(self.output_dir, _file)
+            with gzip.open(path, 'rb') as f:
+                items = f.readlines()
+                self.assertEqual(self.nper, len(items))
+
+                for i, item in enumerate(items):
+                    item = item.strip()
+                    n = i + (count * self.nper)
+                    self.assertEqual("Item-%03d" % n, item)
+
+            count += 1
+
+        # Manual flush
+        self.h._flush(remaining)
+        nfiles = sorted(os.listdir(self.output_dir))
+
+        self.assertEqual(len(files) + 1, len(nfiles))
+
+        latest = nfiles[-1]
+
+        self.assertTrue(latest not in files)
+        with gzip.open(os.path.join(self.output_dir, latest), 'rb') as f:
+            items = f.readlines()
+            for i, item in enumerate(items):
+                item = item.strip()
+                n = i + (count * self.nper)
+                self.assertEqual("Item-%03d" % n, item)
+
+
 
 class TestTrackHandler(unittest.TestCase):
     def setUp(self):

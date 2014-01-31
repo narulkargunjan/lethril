@@ -1,12 +1,13 @@
-import os
-import logging
-import sys
 import esm
+import gzip
 import json
+import logging
+import os
+import sys
 
 from collections import deque, defaultdict
-from threading import Thread
 from datetime import datetime
+from threading import Thread
 
 
 # Module level log
@@ -29,7 +30,8 @@ class StdOutHandler(BaseHandler):
 
 
 class RotatingFileHandler(BaseHandler):
-    def __init__(self, output_dir, entries_per_file=500, delimter='\n'):
+    def __init__(self, output_dir, entries_per_file=500, delimter='\n',
+                 compress=False):
 
         # Create output directory if it does not exist already
         try:
@@ -41,14 +43,20 @@ class RotatingFileHandler(BaseHandler):
         self.output_dir = output_dir
         self.delimter = delimter
         self.entries_per_file = entries_per_file
+        self.compress = compress
 
         self._buffer = deque()
         self._count = 0
 
+
     def _flush(self, count):
         log.debug("Flushing %s of %s" % (count, len(self._buffer)))
         fname = '%s_%s' % (os.uname()[1], datetime.now().isoformat())
-        with open(os.path.join(self.output_dir, fname), 'w') as f:
+        fname = self.compress and ''.join([fname, '.gz']) or fname
+        fpath = os.path.join(self.output_dir, fname)
+
+        with (self.compress and gzip.open(fpath, 'wb')
+              or open(fpath, 'w')) as f:
             for i in xrange(count):
                 data = self._buffer.popleft()
                 self._count -= 1
@@ -65,7 +73,7 @@ class RotatingFileHandler(BaseHandler):
 
 class TrackHandler(BaseHandler):
     def __init__(self, output_dir, track, entries_per_file=500,
-                 delimter='\n'):
+                 delimter='\n', compress=False):
 
 
         # Create output directory if it does not exist already
@@ -76,9 +84,10 @@ class TrackHandler(BaseHandler):
                 log.exception("Exception while creating output directory")        
 
         self.output_dir = output_dir
-        self.delimter = delimter
-        self.entries_per_file = entries_per_file
         self.track = track
+        self.entries_per_file = entries_per_file
+        self.delimter = delimter
+        self.compress = compress
 
         self._index = esm.Index()
         self._rfh = {}
@@ -87,7 +96,7 @@ class TrackHandler(BaseHandler):
             _item_dir = os.path.join(self.output_dir, item)
             _rfh = RotatingFileHandler(_item_dir,
                                        entries_per_file=entries_per_file,
-                                       delimter=delimter)
+                                       delimter=delimter, compress=compress)
             self._rfh[item] = _rfh
             self._index.enter(item)
 
