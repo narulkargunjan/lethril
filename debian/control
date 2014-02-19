@@ -9,6 +9,6 @@ Standards-Version: 3.9.5
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/python-lethril.git;a=summary
 
 Package: python-lethril
-Architecture: any
+Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}
 Description: Lethril - A twitter stream eavesdropper
