@@ -1,9 +1,16 @@
+python-lethril (0.1.2) unstable; urgency=low
+
+  * Add monitor_status option to start stop daemon script to help with
+    keeping the daemon up.
+
+ -- Deepu T Philip <deepu.dtp@gmail.com>  Wed, 19 Feb 2014 12:26:21 +0530
+
 python-lethril (0.1.1) unstable; urgency=low
 
   * Added meaningful logging.
   * Recover on stream error by returning True from the on_error handler
 
- -- Deepu T Philip <deepu@deepu-laptop>  Fri, 31 Jan 2014 14:37:37 +0530
+ -- Deepu T Philip <deepu.dtp@gmail.com>  Fri, 31 Jan 2014 14:37:37 +0530
 
 python-lethril (0.1) unstable; urgency=low
 

@@ -108,8 +108,23 @@ case "$1" in
     status_of_proc -p $PID_FILE "$PYTHON $SCRIPT" "$NAME" && exit 0 || exit $?
     ;;
 
+  monitor_status)
+    if status_of_proc -p $PID_FILE "$PYTHON $SCRIPT" "$NAME"
+    then
+        echo "lethril-twitterd is up"
+    else
+        echo "lethril-twitterd server is down"
+        log_daemon_msg "Restarting...." "$NAME"
+        stop_worker --oknodo --retry 5
+        check_dev_null log_end_msg
+        start_worker        
+        exit
+    fi
+    ;;
+
+
   *)
-    log_action_msg "Usage: $0 {start|stop|force-reload|restart|try-restart|status}"
+    log_action_msg "Usage: $0 {start|stop|force-reload|restart|try-restart|status|monitor_status}"
     exit 1
 esac
 
