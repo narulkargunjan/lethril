@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+
+import logging
+import logging.handlers
+import os
+import signal
+import sys
+import ConfigParser
+
+import argparse
+from lethril.twitter import TwitterListener
+import lethril.handlers
+
+log = logging.getLogger("lethril")
+
+if __name__ == '__main__':
+
+
+    parser = argparse.ArgumentParser()
+    parser.description = "Eavesdrop on Twitter's public stream"
+
+    # Arguments
+    parser.add_argument("--config-file", type=str,
+        help="Config File containing Lethril Configuration"
+    )
+
+    args = parser.parse_args()
+
+    if not args.config_file:
+        raise parser.error("Lethril config file not provided")
+
+    # Parse config file provided
+    config = ConfigParser.ConfigParser()
+    config.read([args.config_file])
+
+    # Lethril Settings
+    settings = dict(config.items('lethril'))
+
+    # Configure logging
+    log.setLevel(settings['log_level'])
+    lrfh = logging.handlers.RotatingFileHandler(filename=settings['log_file'],
+                                                maxBytes=1024 * 1024,
+                                                backupCount=31)
+
+    fmt = logging.Formatter("[%(asctime)s : %(name)s : %(levelname)s : %(thread)d]"
+                            " %(message)s")
+    lrfh.setFormatter(fmt)
+    log.addHandler(lrfh)
+
+    # Twitter specific settings
+    twitter = dict(config.items('twitter'))
+    twitter['entries_per_file'] = int(twitter['entries_per_file'])
+
+    # Load list of track words
+    with open(twitter['track_file'], 'r') as f:
+        track = [line.strip().lower() for line in f]
+
+    # Configure how the tweets are written to file
+    rfh = lethril.handlers.TrackHandlerMongo(twitter['output_dir'], track,
+            entries_per_file=twitter['entries_per_file'],
+            compress=True)
+
+    # Initialize listener 
+    listener = TwitterListener(twitter['consumer_key'],
+                               twitter['consumer_secret'],
+                               twitter['access_token'],
+                               twitter['access_token_secret'],
+                               track=track, handler=rfh,
+                               languages=['en'])
+
+    # Setup signal handlers for correct exit on interrupt or terminate
+    def terminate(*args):
+        try:
+            listener.stop()
+        except:
+            log.exception("Error while trying to terminate cleanly")
+        
+        raise SystemExit
+
+    signal.signal(signal.SIGTERM, terminate)
+
+    # Listen and recover on error
+    log.warn("Eavesdropping on twitter")    
+    try:
+        listener.listen()
+    except KeyboardInterrupt:
+        log.warning("Terminating Listener")
+        terminate()
+    except Exception:
+        log.exception("Listener Error")
+        log.warning("Terminating Listener")
+        terminate()

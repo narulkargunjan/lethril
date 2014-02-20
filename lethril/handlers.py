@@ -7,6 +7,7 @@ import sys
 
 from collections import deque, defaultdict
 from datetime import datetime
+from pymongo import MongoClient
 from threading import Thread
 
 
@@ -139,3 +140,42 @@ class GenericHandlerWorker(Thread):
 
             log.debug("Task Done")
             self.queue.task_done()
+
+
+class TrackHandlerMongo(BaseHandler):
+    def __init__(self, output_dir, track, entries_per_file=500,
+                 delimter='\n', compress=False):
+
+
+        # Create output directory if it does not exist already
+        try:
+            os.makedirs(output_dir)
+        except Exception, e:
+            if e.errno !=  17:
+                log.exception("Exception while creating output directory")        
+
+        client = MongoClient('mongodb://localhost:3002/')
+        self.db = client['meteor']
+
+        self._index = esm.Index()
+        for item in track:
+            item = item.lower()
+            self._index.enter(item)
+
+        self._index.fix()
+
+    def __call__(self, data):
+        parsed = json.loads(data)
+        print parsed['text']
+        if 'in_reply_to_status_id' in parsed:
+            # This is a status. Currently not handling alternate message types
+            text = parsed['text'].lower().encode('utf-8')
+            for span, item in self._index.query(text):
+                self.db['tweets'].insert({
+                    'text' : parsed['text'],
+                    'id' : parsed['id'],
+                    'track' : item
+                    })
+
+    def _flush(self):
+        pass
