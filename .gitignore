@@ -1,2 +1,3 @@
 build/
 Lethril.egg-info/
+*.pyc
