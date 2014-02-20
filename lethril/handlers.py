@@ -166,7 +166,7 @@ class TrackHandlerMongo(BaseHandler):
 
     def __call__(self, data):
         parsed = json.loads(data)
-        print parsed['text']
+        #print parsed['text']
         if 'in_reply_to_status_id' in parsed:
             # This is a status. Currently not handling alternate message types
             text = parsed['text'].lower().encode('utf-8')
@@ -174,6 +174,11 @@ class TrackHandlerMongo(BaseHandler):
                 self.db['tweets'].insert({
                     'text' : parsed['text'],
                     'id' : parsed['id'],
+                    'geo' : parsed['geo'],
+                    'locality' : parsed['place'],
+                    'timezone' : parsed['user']['time_zone'],
+                    'name' : parsed['user']['name'],
+                    'createdtime' : parsed['created_at'],
                     'track' : item
                     })
 
